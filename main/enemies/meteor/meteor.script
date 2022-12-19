@@ -1,0 +1,62 @@
+local MAX_SPEED_X = 50
+local MAX_SPEED_Y = 300
+
+function init(self)
+	local vel_x = math.random(-MAX_SPEED_X, MAX_SPEED_X)
+	local vel_y = -math.random(math.floor(MAX_SPEED_Y * 0.5), MAX_SPEED_Y)
+	self.velocity = vmath.vector3(vel_x, vel_y, 0)
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function update(self, dt)
+	-- move
+	go.set_position(go.get_position() + self.velocity * dt)
+
+	-- destroy when it disappears below the screen
+	if (go.get_position().y <= -32) then
+		go.delete()
+	end
+end
+
+function fixed_update(self, dt)
+	-- This function is only called if 'Use Fixed Timestep' is enabled in the Physics section of game.project
+	-- Add update code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("collision_response") then
+		print(message.other_id)
+		factory.create("/explosions#explosion_meteor_factory")
+		-- go.delete()
+
+		if message.group == hash("bullets") then
+			msg.post("/player#player", "add_score", { points = 1 })
+			go.delete()
+		end
+	end
+end
+
+function on_input(self, action_id, action)
+	-- Add input-handling code here. The game object this script is attached to
+	-- must have acquired input focus:
+	--
+	--    msg.post(".", "acquire_input_focus")
+	--
+	-- All mapped input bindings will be received. Mouse and touch input will
+	-- be received regardless of where on the screen it happened.
+	-- Learn more: https://defold.com/manuals/input/
+	-- Remove this function if not needed
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Learn more: https://defold.com/manuals/hot-reload/
+	-- Remove this function if not needed
+end

@@ -1,0 +1,78 @@
+local progress = {}
+local life = 10
+local maxLife = 10
+local ratio = {}
+local color = {red = vmath.vector4(1, 0, 0, 1), orange = vmath.vector4(1, 0.5, 0, 1), green = vmath.vector4(0, 1, 0, 1)}
+
+local function changeColor(gui)
+	if life < 3 then
+		gui.set_color(progress.node, color.red)
+	elseif life >= 3 and life <= 7 then
+		gui.set_color(progress.node, color.orange)
+	elseif life > 7 then
+		gui.set_color(progress.node, color.green)
+	end
+end
+
+local function sizeProgress(gui)
+	local p = gui.get_position(progress.node)
+	ratio = life / maxLife
+	progress.size.x = ratio * progress.maxWidth
+	gui.set_size(progress.node, progress.size)
+	gui.set_position(progress.node, p)
+	-- changeColor(gui)
+end
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	self.score_node = gui.get_node("score")
+	progress = {size = vmath.vector3(300, 40, 0), maxWidth = 250, node = gui.get_node("progress")}
+	sizeProgress(gui)
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function update(self, dt)
+	-- Add update code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+
+local function scale_down(self, node)
+	local s = 1.0
+	gui.animate(node, gui.PROP_SCALE, vmath.vector4(s, s, s, 0), gui.EASING_OUT, 0.05)
+end
+
+function on_message(self, message_id, message, sender)
+	if (message_id == hash("refresh_score")) then
+		gui.set_text(self.score_node, tostring(message.score))
+		local s = 1.8
+		gui.animate(self.score_node, gui.PROP_SCALE, vmath.vector4(s, s, s, 0), gui.EASING_OUT, 0.1, 0.0, scale_down)
+	end
+	if (message_id == hash("enemy_attack")) then
+		if life >= 1 then
+			life = life - 1
+			sizeProgress(gui)
+		end
+	end
+end
+
+function on_input(self, action_id, action)
+	if (action_id == hash("touch") and action.released == true) then
+		if (gui.pick_node(gui.get_node("rect_menu"), action.x, action.y)) then
+			-- msg.post("/pause_menu#pause_menu", "enable")
+			msg.post("/go#main", "pause")
+		end
+	end
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Learn more: https://defold.com/manuals/hot-reload/
+	-- Remove this function if not needed
+end
